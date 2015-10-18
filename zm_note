@@ -138,8 +138,33 @@ convert_all()
     done
 }
 
-test_dir="test"
-convert_all $test_dir output/html html
-convert_all $test_dir output/tex tex
-convert_all $test_dir output/pdf pdf
+convert_test()
+{
+    local test_dir="test"
+    convert_all $test_dir output/html html
+    convert_all $test_dir output/tex tex
+    convert_all $test_dir output/pdf pdf
+
+    echo ""
+    find output/html -name *.html 
+    find output/tex -name *.tex
+    find output/pdf -name *.pdf 
+}
+
+
+case $1 in
+    -t|--test)
+        convert_test
+        ;;
+    *)
+        format=$1
+        inputdir=$2
+        outputdir=$3
+        if [ -d "$inputdir" -a -n "$outputdir" -a -n "$format" ];then
+            convert_all $inputdir $outputdir $format
+        else
+            echo "$0 format inputdir outputdir"
+        fi
+        ;;
+esac
 
