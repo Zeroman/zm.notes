@@ -1,0 +1,42 @@
+
+/* Note that css is only supported by exported html/xhtml pages. */
+
+body {
+  position: absolute;
+  left: 0px;
+  font-size: 16px;
+  margin-left: 0%;
+  margin-right: 0%;
+  font-family: arial, serif;
+}
+
+code {
+  background-color: #eee;
+  border: 1px dotted #ddd;
+}
+
+pre {
+  background-color: #E0E0E0;
+  margin-left: 2em;
+  margin-right: 2em;
+  padding: 8px;
+  border: 1px outset gray;
+  font-family: courier, courier new;
+  font-size: 95%;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:link {
+  color: blue;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a:visited {
+  color: blue;
+}
