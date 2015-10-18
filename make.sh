@@ -8,94 +8,100 @@ set -e
 cur_path=$(readlink -f $0)
 cur_dir=${cur_path%/*}
 
+proc_css_file()
+{
+    local csspath=$1
+    local outputdir=$2
+
+    if [ ! -e "$csspath" ];then
+        csspath="css/modern.css"
+    fi
+    if [ -e "$csspath" ];then
+        mkdir -p $outputdir/css
+        cp -rf $csspath $outputdir/css
+    else
+        csspath=""
+    fi
+    echo $csspath
+}
+
 convert2html()
 {
-    local inputdir=$1
+    local t2tfile=$1
     local outputdir=$2
-    local prj_name=$3
-    local cssfile=$4
+    local css=$3
+    local configfile=$4
 
-    if [ -z "$cssfile" ];then
-        cssfile="css/modern.css"
-    fi
-
+    local inputdir=$(dirname $t2tfile)
     local options="-t html"
     options+=" --encoding=utf-8"
     options+=" --toc"
     options+=" --toc-level 3"
-    options+=" --css-sugar"
-    options+=" --style=$cssfile"
 
-    local t2t_file=$(readlink -m $inputdir/${prj_name}.t2t)
-    local htm_file=$(readlink -m $outputdir/${prj_name}.html)
+    local cssfile="$(proc_css_file css/${css}.css $outputdir)"
+    test -e "$cssfile" && options+=" --css-sugar --style=$cssfile"
+    test -e "$configfile" && options+=" --config-file=$configfile"
+
+    local t2tname=$(basename $t2tfile)
+    local htmlfile=$(readlink -m $outputdir/${t2tname/.t2t}.html)
 
     mkdir -p $outputdir
     test -d "$inputdir/img" && cp -rf $inputdir/img $outputdir
     test -d "$inputdir/css" && cp -rf $inputdir/css $outputdir
-    if [ -e "$cssfile" ];then
-        mkdir -p $inputdir/css
-        cp -rf $cssfile $outputdir/css
-    fi
-    echo "txt2tags $options -o $htm_file $t2t_file"
-    txt2tags $options -o $htm_file $t2t_file
+    echo "txt2tags $options -o $htmlfile $t2tfile"
+    txt2tags $options -o $htmlfile $t2tfile
 }
 
 convert2tex()
 {
-    local inputdir=$1
+    local t2tfile=$1
     local outputdir=$2
-    local prj_name=$3
-    local cssfile=$4
+    local configfile=$3
 
     local options="-t tex"
     options+=" --encoding=utf-8"
     options+=" --toc"
     options+=" --toc-level 3"
-    options+=" --style=$cssfile"
 
-    local t2t_file=$(readlink -m $inputdir/${prj_name}.t2t)
-    local tex_file=$(readlink -m $outputdir/${prj_name}.tex)
+    local cssfile="$(proc_css_file css/${css}.css $outputdir)"
+    test -e "$configfile" && options+=" --config-file=$configfile"
+
+    local t2tname=$(basename $t2tfile)
+    local texfile=$(readlink -m $outputdir/${t2tname/.t2t}.tex)
 
     mkdir -p $outputdir
-    echo "txt2tags $options -o $tex_file $t2t_file"
-    txt2tags $options -o $tex_file $t2t_file
+    echo "txt2tags $options -o $texfile $t2tfile"
+    txt2tags $options -o $texfile $t2tfile
 }
 
 convert2pdf()
 {
-    local inputdir=$1
+    local t2tfile=$1
     local outputdir=$2
-    local prj_name=$3
-    local cssfile=$4
 
-    local options="-t pdf"
-    options+=" --encoding=utf-8"
-    options+=" --toc"
-    options+=" --toc-level 3"
-    options+=" --style=$cssfile"
+    local inputdir=$(dirname $t2tfile)
+    local t2tname=$(basename $t2tfile)
+    local texfile=$(readlink -m $outputdir/${t2tname/.t2t}.tex)
+    local pdffile=$(readlink -m $outputdir/${t2tname/.t2t}.pdf)
 
-    local t2t_file=$(readlink -m $inputdir/${prj_name}.t2t)
-    local tex_file=$(readlink -m $outputdir/${prj_name}.tex)
-    local pdf_file=$(readlink -m $outputdir/${prj_name}.pdf)
+    echo "convert $t2tfile to $pdffile"
 
     mkdir -p $outputdir
 
-    local t2tname=$(basename $t2tfile)
-    convert2tex $inputdir $outputdir/tex ${t2tname/.t2t}
-    echo "convert $pdf_file to $t2t_file"
-    tools/format_tex.py $outputdir/tex/${prj_name}.tex ${tex_file}
+    convert2tex $t2tfile $outputdir common/config.t2t
+
+    cp -f common/zhtexfont.sty $outputdir
     test -d $inputdir/img && mkdir -p $outputdir/img
     for img in $(find $inputdir/img/ -type f)
     do
         imgname=$(basename $img)
         convert $img $outputdir/img/${imgname/.*}.eps
     done
-    cp tools/zhtexfont.sty $outputdir
+
     cd $outputdir
-    xelatex ${tex_file}
-    xelatex ${tex_file}                         # genarate index
+    xelatex ${texfile}
+    xelatex ${texfile}                         # genarate index
     cd $cur_dir
-    echo "pdf path: $pdf_file"
 }
 
 convert_dir()
@@ -105,12 +111,12 @@ convert_dir()
     local converttype=$3
 
     if [ -e "$inputdir/main.t2t" ];then
-        convert${converttype} $inputdir $outputdir main
+        convert${converttype} $inputdir/main.t2t $outputdir 
     else
         for t2tfile in $(find $inputdir -maxdepth 1 -name *.t2t)
         do
             local t2tname=$(basename $t2tfile)
-            convert2${converttype} $inputdir $outputdir ${t2tname/.t2t}
+            convert2${converttype} $t2tfile $outputdir 
         done
     fi
 }
