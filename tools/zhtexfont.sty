@@ -1,0 +1,39 @@
+% xetex/xelatex 字体设定宏包
+
+\ProvidesPackage{zhtexfont}
+\usepackage{xltxtra,fontspec,xunicode}
+\usepackage[slantfont,boldfont]{xeCJK} % 允许斜体和粗体
+\defaultfontfeatures{Mapping=tex-text} %如果没有它，会有一些 tex 特殊字符无法正常使用，比如连字符。
+
+ % 中文断行
+\XeTeXlinebreaklocale "zh"
+\XeTeXlinebreakskip = 0pt plus 1pt minus 0.1pt
+
+%将系统字体名映射为逻辑字体名称，主要是为了维护的方便
+% \newcommand\fontnamehei{WenQuanYi Zen Hei}
+\newcommand\fontnamehei{WenQuanYi Micro Hei}
+\newcommand\fontnamesong{AR PL SungtiL GB}
+\newcommand\fontnamekai{AR PL UKai CN}
+\newcommand\fontnamemono{WenQuanYi Zen Hei Mono}
+\newcommand\fontnameroman{Bitstream Vera Serif}
+
+\setCJKmainfont{WenQuanYi Micro Hei}
+
+%设置文档正文字体为宋体
+\setmainfont{\fontnamesong}
+\setsansfont[BoldFont=\fontnamekai]{\fontnamekai}
+\setmonofont{\fontnamemono}
+
+%楷体
+\newfontinstance\KAI {\fontnamekai}
+\newcommand{\kai}[ 1]{{\KAI  #1}}
+
+%黑体
+\newfontinstance\HEI{\fontnamehei}
+\newcommand{\hei}[ 1]{{\HEI #1}}
+
+%英文
+\newfontinstance\ENF{\fontnameroman }
+\newcommand{\en}[1 ]{\,{\ENF #1 }\,}
+\newcommand{\EN}{\,\ENF\, }
+
