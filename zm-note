@@ -8,6 +8,9 @@ set -e
 cur_path=$(readlink -f $0)
 cur_dir=${cur_path%/*}
 
+SUDO=$(test "$(id -u)" = "0" || which sudo || true)
+
+
 proc_css_file()
 {
     local csspath=$1
@@ -151,10 +154,27 @@ convert_test()
     find output/pdf -name *.pdf 
 }
 
+install_zm_note()
+{
+    local installdir=$1    
+    
+    if [ -z "$installdir" ];then
+        installdir="/usr/share/zm-note"
+    fi
+
+    $SUDO mkdir -p $installdir
+    $SUDO cp -rf $cur_dir/{zm-note,common,css,test} $installdir/
+    $SUDO mkdir -p $_root_dir/usr/bin
+    $SUDO ln -svf /usr/share/zm-note/zm-note $_root_dir/usr/bin/zm-note
+}
 
 case $1 in
     -t|--test)
         convert_test
+        ;;
+    -i|--install)
+        shift
+        install_zm_note $1
         ;;
     *)
         format=$1
