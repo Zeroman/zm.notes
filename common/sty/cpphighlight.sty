@@ -1,0 +1,31 @@
+
+
+\ProvidesPackage{cpphighlight}
+
+
+\RequirePackage{listings}
+\RequirePackage{xcolor}
+
+\lstdefinestyle{mycpp}{ 
+language=C++, 
+showtabs=true,
+tab=,
+tabsize=2,
+basicstyle=\ttfamily\footnotesize,%\setstretch{.5},
+stringstyle=\color{stringcolour},
+showstringspaces=false,
+sensitive=true, 
+showspaces=false, 
+keywordstyle=\color{blue}\bfseries, 
+stringstyle=\color{red}, 
+commentstyle=\color{gray!80}, 
+numberstyle=\tiny, 
+numberblanklines=false, 
+frame=trbl,
+rulecolor=\color{black!40},
+backgroundcolor=\color{gray!5},
+breakindent=.5\textwidth,frame=single,breaklines=true%
+% numbers=left, 
+} 
+\lstnewenvironment{cpp}[1][]{\lstset{style=mycpp}}{}
+% See more at: http://compgroups.net/comp.text.tex/code-listing-color-for-cpp-preprocessor/1936313#sthash.x48Niv0Q.dpuf

@@ -2,14 +2,18 @@
 
 %% http://www.github.com/zeroman/zm.notes
 
-%!postproc(tex): '\\documentclass{article}' '\\documentclass[10pt,a4paper]{article}'
-%!postproc(tex): '\\usepackage.*{hyperref}' '\\usepackage[unicode,urlcolor=blue,colorlinks=true]{hyperref}'
-%!postproc(tex): '\\usepackage\[utf8\]{inputenc}' '\\usepackage[utf8]{inputenc}\n\\usepackage{listings}\n\\usepackage{fancyvrb}\n\\usepackage{xcolor}\n\\usepackage{zhtexfont}\n\\lstset{breaklines=tr,backgroundcolor=\\color[rgb]{0.95,1.0,1.0},frame=shadowbox,framexleftmargin=2mm,rulesepcolor=\\color{red!20!green!20!blue!20!},extendedchars=false}'
+%!style(tex): listings
+%!style(tex): fancyvrb
+%!style(tex): xcolor
+
+%!postproc(tex): 'documentclass{article}' 'documentclass[10pt,a4paper]{article}'
+%!postproc(tex): 'usepackage.*{hyperref}' 'usepackage[unicode,urlcolor=blue,colorlinks=true]{hyperref}'
 %!postproc(tex): 'includegraphics' 'includegraphics[scale=0.46]'
-%!postproc(tex): 'begin{verbatim}' 'begin{lstlisting}[language={[ANSI]C}]'
+%!postproc(tex): 'begin{verbatim}' 'begin{lstlisting}'
 %!postproc(tex): 'end{verbatim}' 'end{lstlisting}'
 %!postproc(tex): '.png}' '.eps}'
 %!postproc(tex): '.jpg}' '.eps}'
+
 %%!postproc(tex): '' ''
 %%!postproc(tex): '' ''
 %%!postproc(tex): '' ''

@@ -17,7 +17,7 @@ proc_css_file()
     local outputdir=$2
 
     if [ ! -e "$csspath" ];then
-        csspath="css/modern.css"
+        csspath="common/css/modern.css"
     fi
     if [ -e "$csspath" ];then
         mkdir -p $outputdir/css
@@ -28,53 +28,108 @@ proc_css_file()
     echo $csspath
 }
 
+source2tex()
+{
+    local srcfile=$1
+    local texfile=$2
+
+    > $texfile
+    ext=${srcfile##*.}
+    case $ext in
+        py)
+            echo '\begin{python}' >> $texfile
+            cat $srcfile >> $texfile
+            echo '\end{python}' >> $texfile
+            ;;
+        c|h|cpp|C|H|CPP)
+            echo '\begin{cpp}' >> $texfile
+            cat $srcfile >> $texfile
+            echo '\end{cpp}' >> $texfile
+            ;;
+        *)
+            echo '\begin{lstlisting}[language={[ANSI]C}]' >> $texfile
+            cat $srcfile >> $texfile
+            echo '\end{lstlisting}' >> $texfile
+            ;;
+    esac
+}
+
+source2html()
+{
+    local srcfile=$1
+    local htmlfile=$2
+
+    echo "<pre>" > $htmlfile
+    highlight --inline-css -f $srcfile >> $htmlfile
+    echo "</pre>" >> $htmlfile
+}
+
 convert2html()
 {
     local t2tfile=$1
     local outputdir=$2
     local css=$3
-    local configfile=$4
 
     local inputdir=$(dirname $t2tfile)
     local options="-t html"
     options+=" --encoding=utf-8"
     options+=" --toc"
     options+=" --toc-level 3"
+    options+=" --config-file=$cur_dir/common/config.t2t"
 
-    local cssfile="$(proc_css_file css/${css}.css $outputdir)"
+    local cssfile="$(proc_css_file common/css/${css}.css $outputdir)"
     test -e "$cssfile" && options+=" --css-sugar --style=$cssfile"
-    test -e "$configfile" && options+=" --config-file=$configfile"
 
     local t2tname=$(basename $t2tfile)
     local htmlfile=$(readlink -m $outputdir/${t2tname/.t2t}.html)
 
+    newt2tfile=$outputdir/$t2tname
+    cp -f $t2tfile $newt2tfile
+    for srcfile in $(ls $inputdir/*.{c,cpp,h,C,CPP,H,py} 2>/dev/null)
+    do
+        source2html $srcfile $outputdir/$(basename $srcfile).html
+        srcfilename=$(basename $srcfile)
+        sed -i "s#$srcfilename'#$srcfilename.html'#g" $newt2tfile
+    done
+
     mkdir -p $outputdir
     test -d "$inputdir/img" && cp -rf $inputdir/img $outputdir
     test -d "$inputdir/css" && cp -rf $inputdir/css $outputdir
-    echo "txt2tags $options -o $htmlfile $t2tfile"
-    txt2tags $options -o $htmlfile $t2tfile
+    echo "txt2tags $options -o $htmlfile $newt2tfile"
+    txt2tags $options -o $htmlfile $newt2tfile
 }
 
 convert2tex()
 {
     local t2tfile=$1
     local outputdir=$2
-    local configfile=$3
 
     local options="-t tex"
     options+=" --encoding=utf-8"
     options+=" --toc"
     options+=" --toc-level 3"
-
-    local cssfile="$(proc_css_file css/${css}.css $outputdir)"
-    test -e "$configfile" && options+=" --config-file=$configfile"
+    options+=" --style $cur_dir/common/sty/zmnote.sty"
+    options+=" --style $cur_dir/common/sty/zhtexfont.sty"
+    options+=" --style $cur_dir/common/sty/cpphighlight.sty"
+    options+=" --style $cur_dir/common/sty/pythonhighlight.sty"
+    options+=" --config-file=$cur_dir/common/config.t2t"
 
     local t2tname=$(basename $t2tfile)
+    local inputdir=$(dirname $t2tfile)
     local texfile=$(readlink -m $outputdir/${t2tname/.t2t}.tex)
 
     mkdir -p $outputdir
-    echo "txt2tags $options -o $texfile $t2tfile"
-    txt2tags $options -o $texfile $t2tfile
+    newt2tfile=$outputdir/$t2tname
+    cp -f $t2tfile $newt2tfile
+    for srcfile in $(ls $inputdir/*.{c,cpp,h,C,CPP,H,py} 2>/dev/null)
+    do
+        source2tex $srcfile $outputdir/$(basename $srcfile).tex
+        srcfilename=$(basename $srcfile)
+        sed -i "s#$srcfilename'#$srcfilename.tex'#g" $newt2tfile
+    done
+
+    echo "txt2tags $options -o $texfile $newt2tfile"
+    txt2tags $options -o $texfile $newt2tfile
 }
 
 convert2pdf()
@@ -91,9 +146,8 @@ convert2pdf()
 
     mkdir -p $outputdir
 
-    convert2tex $t2tfile $outputdir common/config.t2t
+    convert2tex $t2tfile $outputdir
 
-    cp -f common/zhtexfont.sty $outputdir
     test -d $inputdir/img && mkdir -p $outputdir/img
     for img in $(find $inputdir/img/ -type f)
     do
@@ -116,7 +170,7 @@ convert_dir()
     if [ -e "$inputdir/main.t2t" ];then
         convert${converttype} $inputdir/main.t2t $outputdir 
     else
-        for t2tfile in $(find $inputdir -maxdepth 1 -name *.t2t)
+        for t2tfile in $(ls $inputdir/*.t2t 2>/dev/null)
         do
             local t2tname=$(basename $t2tfile)
             convert2${converttype} $t2tfile $outputdir 
@@ -134,10 +188,10 @@ convert_all()
         return
     fi
 
-    t2tdirs=$(cd $inputdir;find . -type d ! -name *.git)
+    t2tdirs=$(cd $inputdir;find . -type d ! -name '*.git')
     for dir in $t2tdirs
     do
-        convert_dir $inputdir/$dir $outputdir/$dir $converttype
+        convert_dir "$(readlink -m $inputdir/$dir)" "$(readlink -m $outputdir/$dir)" $converttype
     done
 }
 
@@ -149,9 +203,9 @@ convert_test()
     convert_all $test_dir output/pdf pdf
 
     echo ""
-    find output/html -name *.html 
-    find output/tex -name *.tex
-    find output/pdf -name *.pdf 
+    find output/html -name '*.html'
+    find output/tex -name '*.tex'
+    find output/pdf -name '*.pdf'
 }
 
 install_zm_note()
