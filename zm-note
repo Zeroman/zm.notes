@@ -34,24 +34,24 @@ source2tex()
     local texfile=$2
 
     > $texfile
+
     ext=${srcfile##*.}
     case $ext in
         py)
-            echo '\begin{python}' >> $texfile
-            cat $srcfile >> $texfile
-            echo '\end{python}' >> $texfile
+            echo '\begin{lstlisting}[language=python]' >> $texfile
             ;;
         c|h|cpp|C|H|CPP)
-            echo '\begin{cpp}' >> $texfile
-            cat $srcfile >> $texfile
-            echo '\end{cpp}' >> $texfile
+            echo '\begin{lstlisting}[language=c++]' >> $texfile
+            ;;
+        sh)
+            echo '\begin{lstlisting}[language=bash]' >> $texfile
             ;;
         *)
-            echo '\begin{lstlisting}[language={[ANSI]C}]' >> $texfile
-            cat $srcfile >> $texfile
-            echo '\end{lstlisting}' >> $texfile
+            echo '\begin{lstlisting}' >> $texfile
             ;;
     esac
+    cat $srcfile >> $texfile
+    echo '\end{lstlisting}' >> $texfile
 }
 
 source2html()
@@ -85,7 +85,7 @@ convert2html()
 
     newt2tfile=$outputdir/$t2tname
     cp -f $t2tfile $newt2tfile
-    for srcfile in $(ls $inputdir/*.{c,cpp,h,C,CPP,H,py} 2>/dev/null)
+    for srcfile in $(ls $inputdir/*.{c,cpp,h,C,CPP,H,py,sh} 2>/dev/null)
     do
         source2html $srcfile $outputdir/$(basename $srcfile).html
         srcfilename=$(basename $srcfile)
@@ -110,8 +110,6 @@ convert2tex()
     options+=" --toc-level 3"
     options+=" --style $cur_dir/common/sty/zmnote.sty"
     options+=" --style $cur_dir/common/sty/zhtexfont.sty"
-    options+=" --style $cur_dir/common/sty/cpphighlight.sty"
-    options+=" --style $cur_dir/common/sty/pythonhighlight.sty"
     options+=" --config-file=$cur_dir/common/config.t2t"
 
     local t2tname=$(basename $t2tfile)
@@ -121,7 +119,7 @@ convert2tex()
     mkdir -p $outputdir
     newt2tfile=$outputdir/$t2tname
     cp -f $t2tfile $newt2tfile
-    for srcfile in $(ls $inputdir/*.{c,cpp,h,C,CPP,H,py} 2>/dev/null)
+    for srcfile in $(ls $inputdir/*.{c,cpp,h,C,CPP,H,py,sh} 2>/dev/null)
     do
         source2tex $srcfile $outputdir/$(basename $srcfile).tex
         srcfilename=$(basename $srcfile)

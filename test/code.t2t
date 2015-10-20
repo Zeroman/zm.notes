@@ -1,15 +1,17 @@
-test include code
+include code test
 51feel@gmail.com
 2015-10-19 21:01:45
 
 + 测试python代码高亮 +
 
 + 测试python代码
-%!include: ''test.py''
+%!include: ''code.py''
 
 + 测试c代码
-%!include: ''test.c''
+%!include: ''code.c''
 
 + 测试cpp代码
-%!include: ''test.cpp''
+%!include: ''code.cpp''
 
++ 测试shell代码
+%!include: ''code.sh''
