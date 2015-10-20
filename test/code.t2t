@@ -13,5 +13,8 @@ include code test
 + 测试cpp代码
 %!include: ''code.cpp''
 
++ 测试java代码
+%!include: ''code.java''
+
 + 测试shell代码
 %!include: ''code.sh''
